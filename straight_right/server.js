@@ -1,0 +1,94 @@
+var express = require('express');
+var app = express();
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
+
+var constrainedCanvasWidth;
+var constrainedCanvasHeight;
+var radius;
+var currPanel;
+var circleColor1;
+var destination1;
+var startingPos1;
+var artworkSent = false;
+var NUM_PANELS = 3;
+var panel_ids = [];
+
+app.use(express.static(__dirname + '/node_modules'));
+app.get('/', function(req, res,next) {
+    res.sendFile(__dirname + '/index.html');
+});
+
+io.on('connection', function(socket) {
+    console.log('Client connected...');
+    if (panel_ids.length < NUM_PANELS) {
+      panel_ids.push(socket.id);
+    }
+
+    if (panel_ids.length >= NUM_PANELS && !artworkSent) {
+      setTimeout(InitiateArtwork, 500);
+    }
+
+    socket.on('circle_edge', function(data) {
+      currPanel = (currPanel + 1) % NUM_PANELS;
+      SendArtwork(currPanel, 0, radius, circleColor1, startingPos1, destination1);
+    });
+});
+
+function InitiateArtwork() {
+  constrainedCanvasWidth = 300;
+  constrainedCanvasHeight = 300;
+  SendCanvasInfo();
+
+  radius = 30;
+  circleColor1 = {
+    r: Math.floor(Math.random() * 256),
+    g: Math.floor(Math.random() * 256),
+    b: Math.floor(Math.random() * 256)
+  };
+  destination1 = {
+    emit_destination: [constrainedCanvasWidth - radius, constrainedCanvasHeight/2],
+    dead_destination: [constrainedCanvasWidth + radius, constrainedCanvasHeight/2],
+    tolerance: 0.5
+  };
+  startingPos1 = {
+    x: 0-radius,
+    y: constrainedCanvasHeight/2
+  };
+
+  currPanel = 0;
+  SendArtwork(currPanel, 0, radius, circleColor1, startingPos1, destination1);
+  artworkSent = true;
+}
+
+function SendCanvasInfo() {
+  var sockets = io.sockets.sockets;
+  var data = {
+    width: constrainedCanvasWidth,
+    height: constrainedCanvasHeight
+  }
+  for (var socketId in sockets) {
+    sockets[socketId].emit('canvasInfo', data);
+  }
+}
+
+function SendArtwork(panelIndex, circleId, radius, color, startingPos, destination) {
+  var sockets = io.sockets.sockets;
+  var data = {
+    circleId: circleId,
+    radius: radius,
+    color: color,
+    startingPos: startingPos,
+    destination: destination
+  };
+  sockets[panel_ids[panelIndex]].emit('createCircle', data);
+}
+
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+var port = process.env.PORT || 8080;
+http.listen(port, function() {
+    console.log('listening on *:' + port);
+});

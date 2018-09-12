@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+    <script src="http://127.0.0.1:8080/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.16/p5.js"></script>
+    <head>
+      <style>
+        #canvas {
+          width: 300px;
+          height: 300px;
+          position:absolute;
+          left:0; right:0;
+          top:0; bottom:0;
+          margin:auto;
+        }
+      </style>
+    </head>
+    <body>
+        <div id="canvas"></div>
+    </body>
+
+    <script>var socket = io.connect('http://127.0.0.1:8080');</script>
+    <script>
+        var curr_color = {
+          r: 255,
+          g: 255,
+          b: 255
+        };
+        socket.on('update', function(data) {
+            curr_color = { r : data.r,
+                           g : data.g,
+                           b : data.b };
+            curr_count = data.count;
+            updateCanvas(curr_color, curr_count);
+        });
+
+        // socket.on('new random color', function(color) {
+        //   updateCanvas(color);
+        // });
+
+        var canvas;
+        var constrainedCanvasWidth = 300;
+        var constrainedCanvasHeight = 300;
+        function setup() {
+        	updateCanvas(curr_color, 0);
+        }
+
+        function updateCanvas(color, count) {
+          canvas = createCanvas(constrainedCanvasWidth, constrainedCanvasHeight);
+        	canvas.parent('canvas');
+        	background(color.r, color.g, color.b);
+          if (count != 0) {
+            textSize(20);
+            text(count.toString(), 150, 150);
+          }
+        }
+    </script>
+</html>

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+    <script src="http://127.0.0.1:8080/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.16/p5.js"></script>
+    <head>
+      <style>
+        #canvas {
+          position: absolute;
+          left:0; right:0;
+          top:0; bottom:0;
+          margin:auto;
+        }
+      </style>
+    </head>
+    <body>
+        <div id="canvas"></div>
+    </body>
+
+    <script>var socket = io.connect('http://127.0.0.1:8080');</script>
+    <script>
+        socket.on('update', function(data) {
+            UpdateCanvas(data.width, data.height, data.bgColor);
+            UpdateLetter(data.letter, data.width/2, data.height/2);
+        });
+
+        var canvas;
+        function setup() {
+          var constrainedCanvasWidth = 0;
+          var constrainedCanvasHeight = 0;
+          canvas = createCanvas(constrainedCanvasWidth, constrainedCanvasHeight);
+        	canvas.parent('canvas');
+          background(255);
+        }
+
+        function UpdateCanvas(width, height, bgColor, letter) {
+          var elem = document.getElementById("canvas");
+          elem.style.width = width.toString()+"px";
+          elem.style.height = height.toString()+"px";
+          canvas = createCanvas(width, height);
+          canvas.parent('canvas');
+          background(bgColor.r, bgColor.g, bgColor.b);
+        }
+
+        function UpdateLetter(letter, x, y) {
+          push();
+          noStroke();
+          fill(0);
+          textSize(100);
+          textAlign(CENTER);
+          text(letter, x, y+25);
+          pop();
+
+          setTimeout(RequestNextLetter, getRandomInt(500, 1500));
+        }
+
+        function RequestNextLetter() {
+          console.log("ya");
+          socket.emit('letterDone');
+        }
+
+        function getRandomInt(min, max) {
+          return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+    </script>
+</html>

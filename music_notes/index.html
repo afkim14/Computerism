@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+    <script src="http://127.0.0.1:8080/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.16/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/13.1.24/Tone.js"></script>
+    <head>
+      <style>
+        #canvas {
+          position: absolute;
+          left:0; right:0;
+          top:0; bottom:0;
+          margin:auto;
+        }
+      </style>
+    </head>
+    <body>
+        <div id="canvas"></div>
+    </body>
+
+    <script>var socket = io.connect('http://127.0.0.1:8080');</script>
+    <script>
+        var synth = new Tone.Synth().toMaster();
+        socket.on('update', function(data) {
+            var curr_color = { r : data.r, g : data.g, b : data.b };
+            var curr_note = data.note;
+            updateCanvas(data.width, data.height, curr_color);
+            playSound(curr_note);
+        });
+
+        var canvas;
+        var constrainedCanvasWidth = 0;
+        var constrainedCanvasHeight = 0;
+        function setup() {
+          canvas = createCanvas(constrainedCanvasWidth, constrainedCanvasHeight);
+        	canvas.parent('canvas');
+          background(255);
+        }
+
+        function updateCanvas(width, height, curr_color) {
+          var elem = document.getElementById("canvas");
+          elem.style.width = width.toString()+"px";
+          elem.style.height = height.toString()+"px";
+          canvas = createCanvas(width, height);
+          canvas.parent('canvas');
+          background(curr_color.r, curr_color.g, curr_color.b);
+        }
+
+        function playSound(curr_note) {
+          synth.triggerAttackRelease(curr_note, "4n");
+        }
+    </script>
+</html>

@@ -1,0 +1,3 @@
+- Talk to Zach about this Idea
+- Change all scripts that take something from a online server and download that stable version of p5.js locally
+- Talk to Lindsay Bosch (block museum)

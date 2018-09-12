@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+    <head>
+      <style>
+        #canvas {
+          width: 300px;
+          height: 300px;
+          position:absolute;
+          left:0; right:0;
+          top:0; bottom:0;
+          margin:auto;
+        }
+      </style>
+    </head>
+    <body>
+      <script src="http://127.0.0.1:8080/socket.io/socket.io.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.16/p5.js"></script>
+        <div id="canvas"></div>
+    </body>
+
+    <script>var socket = io.connect('http://127.0.0.1:8080');</script>
+    <script>
+        var objs = [];
+        var canvas;
+        var initiated = false;
+        var constrainedCanvasWidth = 300;
+        var constrainedCanvasHeight = 300;
+
+        socket.on('canvasInfo', function(data) {
+          constrainedCanvasWidth = data.width;
+          constrainedCanvasHeight = data.height;
+          var elem = document.getElementById("canvas");
+          elem.style.width = constrainedCanvasWidth.toString()+"px";
+          elem.style.height = constrainedCanvasHeight.toString()+"px";
+          canvas = createCanvas(constrainedCanvasWidth, constrainedCanvasHeight);
+          canvas.parent('canvas');
+          initiated = true;
+        });
+        socket.on('createCircle', function(data) {
+            createCircle(data);
+        });
+
+        function Circle(id, x, y, radius, color, destinations) {
+          this.id = id;
+          this.x = x;
+          this.y = y;
+          this.radius = radius;
+          this.color = color;
+          this.curr_destination = destinations.emit_destination;
+          this.destinations = destinations;
+          this.emitted = false;
+          this.dead = false;
+          this.show = function() {
+            push();
+            noStroke();
+            fill(color.r, color.g, color.b);
+            ellipse(this.x, this.y, this.radius, this.radius);
+            pop();
+
+            var tolerance = this.destinations.tolerance;
+            if ((this.x >= this.curr_destination[0] - tolerance && this.x <= this.curr_destination[0] + tolerance) &&
+                (this.y >= this.curr_destination[1] - tolerance && this.y <= this.curr_destination[1] + tolerance)) {
+                  if (!this.emitted) {
+                    var data = {
+                      circleId: this.id
+                    };
+                    socket.emit('circle_edge', data);
+                    this.emitted = true;
+                    this.curr_destination = this.destinations.dead_destination;
+                  } else {
+                    this.dead = true;
+                  }
+            } else {
+              var diff = [this.curr_destination[0] - this.x, this.curr_destination[1] - this.y];
+              var arr = [Math.abs(diff[0]), Math.abs(diff[1])];
+              var max = Math.max(arr[0], arr[1]);
+              var normalized = [diff[0] / max, diff[1] / max];
+              var mov_factor = 0.85;
+              this.x += normalized[0] * mov_factor;
+              this.y += normalized[1] * mov_factor;
+            }
+          }
+        }
+
+        function setup() {
+          canvas = createCanvas(constrainedCanvasWidth, constrainedCanvasHeight);
+        	canvas.parent('canvas');
+
+        }
+
+        function draw() {
+          background(33, 33, 33);
+          if (!initiated) {
+            push();
+            fill(255,255,255);
+            textAlign(CENTER);
+            text("Waiting for other panels to connect ...", constrainedCanvasWidth/2, constrainedCanvasHeight/2);
+            pop();
+          }
+          for (var i=0; i < objs.length; i++) {
+            var obj = objs[i];
+            if (!obj.dead) {
+              obj.show();
+            } else {
+              objs.splice(i, 1);
+            }
+          }
+        }
+
+        function createCircle(data) {
+          var circle = new Circle(data.circleId, data.startingPos.x, data.startingPos.y, data.radius, data.color, data.destination);
+          objs.push(circle);
+        }
+    </script>
+</html>
