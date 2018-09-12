@@ -12,6 +12,10 @@ app.get('/', function(req, res,next) {
 
 io.on('connection', function(socket) {
     console.log('Client connected...');
+    setTimeout(UpdateClients, 500);
+});
+
+function UpdateClients() {
     count++;
     var data = {
         r : Math.floor(Math.random() * 256),
@@ -20,16 +24,7 @@ io.on('connection', function(socket) {
         count : count
     }
     io.emit('update', data);
-});
-
-// setInterval(() => {
-//     var random_color = {
-//         r : Math.floor(Math.random() * 256),
-//         g : Math.floor(Math.random() * 256),
-//         b : Math.floor(Math.random() * 256)
-//     }
-//     io.emit('new random color', random_color);
-// }, 5000);
+}
 
 var port = process.env.PORT || 8080;
 http.listen(port, function() {

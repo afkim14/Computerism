@@ -50,7 +50,8 @@ io.on('connection', function(socket) {
       b : nextColor.b,
       note : nextNote,
     };
-    socket.emit('update', data);
+
+    setTimeout(function() {socket.emit('update', data);}, 500);
 });
 
 function sendNotes() {

@@ -20,7 +20,7 @@ http.listen(port, function() {
 
 io.on('connection', function(socket) {
   console.log('Client connected...');
-  SendLetter(socket.id);
+  setTimeout(function() {SendLetter(socket.id);}, 500);
 
   socket.on('letterDone', function() {
     SendLetter(socket.id);
