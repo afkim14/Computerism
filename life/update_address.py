@@ -27,6 +27,6 @@ def ReplaceAddress(address):
 
 if __name__ == "__main__":
     if (len(sys.argv) > 1):
-        searchterm = '+'.join(sys.argv[1:])
+        ReplaceAddress(sys.argv[1])
     else:
         print("Please provide an address [ex: 127.0.0.1:8080].")
