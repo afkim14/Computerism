@@ -1,9 +1,8 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <script src="http://127.0.0.1:8080/socket.io/socket.io.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.16/p5.js"></script>
-    <head>
-      <style>
+<head><script src="http://127.0.0.1:8080/socket.io/socket.io.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.16/p5.js"></script>
+<style>
         #canvas {
           width: 300px;
           height: 300px;
@@ -13,13 +12,11 @@
           margin:auto;
         }
       </style>
-    </head>
-    <body>
-        <div id="canvas"></div>
-    </body>
-
-    <script>var socket = io.connect('http://127.0.0.1:8080');</script>
-    <script>
+</head><body>
+<div id="canvas"></div>
+</body>
+<script>var socket = io.connect('http://127.0.0.1:8080');</script>
+<script>
         var curr_color = {
           r: 255,
           g: 255,
