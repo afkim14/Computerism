@@ -25,6 +25,7 @@ io.on('disconnect', function(socket) {
 });
 
 function InitiateArtwork() {
+  SendArtwork();
   setInterval(SendArtwork, 3000);
   INTERVAL_SET = true;
 }

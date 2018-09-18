@@ -4,17 +4,13 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
-var constrainedCanvasWidth;
-var constrainedCanvasHeight;
 var radius;
-var circleColor1;
-var circleColor2;
-var destination1;
-var destination2;
-var startingPos1;
-var startingPos2;
-var tick1;
-var tick2;
+var constrainedCanvasSizes = [];
+var colors = [];
+var destinations = [];
+var startingPositions = [];
+var ticks = [];
+
 var artworkSent = false;
 var NUM_PANELS = 3;
 var panel_ids = [];
@@ -26,90 +22,63 @@ app.get('/', function(req, res,next) {
 
 io.on('connection', function(socket) {
     console.log('Client connected...');
-    if (panel_ids.length < NUM_PANELS) {
-      panel_ids.push(socket.id);
-    }
+    socket.on('canvasInfo', function(data) {
+      var canvasWidth = data.width;
+      var canvasHeight = data.height;
 
-    if (panel_ids.length >= NUM_PANELS && !artworkSent) {
-      setTimeout(InitiateArtwork, 500);
-    }
+      if (panel_ids.length < NUM_PANELS) {
+        panel_ids.push(socket.id);
+        constrainedCanvasSizes.push({width: canvasWidth, height: canvasHeight});
+      }
+
+      if (panel_ids.length >= NUM_PANELS && !artworkSent) {
+        setTimeout(InitiateArtwork, 500);
+      }
+    });
 
     socket.on('circle_edge', function(data) {
       if (socket.id == panel_ids[0]) {
-        if (tick1) {
-          SendArtwork(0, 0, radius, circleColor1, startingPos2, destination2);
+        if (ticks[0]) {
+          SendArtwork(0, 0, radius, colors[0], getStartingPos(0, 2), getDestination(0, 2));
         } else {
-          SendArtwork(0, 0, radius, circleColor1, startingPos1, destination1);
+          SendArtwork(0, 0, radius, colors[0], getStartingPos(0, 0), getDestination(0, 0));
         }
-        tick1 = !tick1;
+        ticks[0] = !ticks[0];
       } else if (socket.id == panel_ids[1]) {
-        // if (data.circleId == 0) {
-        //   SendArtwork(0, 0, radius, circleColor1, startingPos1, destination1);
-        // } else {
-        //   SendArtwork(2, 1, radius, circleColor2, startingPos2, destination2);
-        // }
+        //
+        //
+        //
+        //
       } else if (socket.id == panel_ids[2]) {
-        if (tick2) {
-          SendArtwork(2, 1, radius, circleColor2, startingPos1, destination1);
+        if (ticks[2]) {
+          SendArtwork(2, 1, radius, colors[2], getStartingPos(2, 0), getDestination(2, 0));
         } else {
-          SendArtwork(2, 1, radius, circleColor2, startingPos2, destination2);
+          SendArtwork(2, 1, radius, colors[2], getStartingPos(2, 2), getDestination(2, 2));
         }
-        tick2 = !tick2;
+        ticks[2] = !ticks[2];
       }
     });
 });
 
 function InitiateArtwork() {
-  constrainedCanvasWidth = 300;
-  constrainedCanvasHeight = 300;
-  SendCanvasInfo();
+  for (var i = 0; i < NUM_PANELS; i++) {
+    colors.push(getRandomColor());
+    ticks.push(true);
+  }
 
-  radius = 30;
-  circleColor1 = {
-    r: Math.floor(Math.random() * 256),
-    g: Math.floor(Math.random() * 256),
-    b: Math.floor(Math.random() * 256)
-  };
-  circleColor2 = {
-    r: Math.floor(Math.random() * 256),
-    g: Math.floor(Math.random() * 256),
-    b: Math.floor(Math.random() * 256)
-  };
-  destination1 = {
-    emit_destination: [constrainedCanvasWidth - radius, constrainedCanvasHeight/2],
-    dead_destination: [constrainedCanvasWidth + radius, constrainedCanvasHeight/2],
-    tolerance: 0.5
-  };
-  destination2 = {
-    emit_destination: [0 + radius, constrainedCanvasHeight/2],
-    dead_destination: [0 - radius, constrainedCanvasHeight/2],
-    tolerance: 0.5
-  };
-  startingPos1 = {
-    x: 0-radius,
-    y: constrainedCanvasHeight/2
-  };
-  startingPos2 = {
-    x: constrainedCanvasWidth+radius,
-    y: constrainedCanvasHeight/2
-  };
+  radius = getSmallestRadius();
+  SendInitiate();
 
-  tick1 = true;
-  tick2 = true;
-  SendArtwork(0, 0, radius, circleColor1, startingPos1, destination1);
-  SendArtwork(2, 1, radius, circleColor2, startingPos2, destination2);
+  SendArtwork(0, 0, radius, colors[0], getStartingPos(0, 0), getDestination(0, 0));
+  SendArtwork(2, 1, radius, colors[2], getStartingPos(2, 2), getDestination(2, 2));
   SendBackground(1, {r: 255, g: 61, b: 56});
   artworkSent = true;
 }
 
-function SendCanvasInfo() {
+function SendInitiate() {
   var sockets = io.sockets.sockets;
-  var data = {
-    width: constrainedCanvasWidth,
-    height: constrainedCanvasHeight
-  }
   for (var socketId in sockets) {
-    sockets[socketId].emit('canvasInfo', data);
+    sockets[socketId].emit('initiate');
   }
 }
 
@@ -131,6 +100,60 @@ function SendBackground(panelIndex, color) {
     color: color,
   };
   sockets[panel_ids[panelIndex]].emit('changeBackground', data);
+}
+
+function getSmallestRadius() {
+  var smallestWidth = constrainedCanvasSizes[0].width;
+  for (var i = 1; i < NUM_PANELS; i++) {
+    if (constrainedCanvasSizes[i].width < smallestWidth) {
+      smallestWidth = constrainedCanvasSizes[i].width;
+    }
+  }
+  var radius = Math.floor(smallestWidth/10);
+  return radius;
+}
+
+function getRandomColor() {
+  var color = {
+    r: getRandomInt(0, 255),
+    g: getRandomInt(0, 255),
+    b: getRandomInt(0, 255)
+  };
+  return color;
+}
+
+function getDestination(panelIndex, option) {
+  var destination;
+  if (option == 0) {
+    destination = {
+      emit_destination: [constrainedCanvasSizes[panelIndex].width - radius, constrainedCanvasSizes[panelIndex].height/2],
+      dead_destination: [constrainedCanvasSizes[panelIndex].width + radius, constrainedCanvasSizes[panelIndex].height/2],
+      tolerance: 0.5
+    };
+  } else if (option == 2) {
+    destination = {
+      emit_destination: [0 + radius, constrainedCanvasSizes[panelIndex].height/2],
+      dead_destination: [0 - radius, constrainedCanvasSizes[panelIndex].height/2],
+      tolerance: 0.5
+    };
+  }
+  return destination;
+}
+
+function getStartingPos(panelIndex, option) {
+  var startingPos;
+  if (option == 0) {
+    startingPos = {
+      x: 0-radius,
+      y: constrainedCanvasSizes[panelIndex].height/2
+    };
+  } else if (option == 2) {
+    startingPos = {
+      x: constrainedCanvasSizes[panelIndex].width+radius,
+      y: constrainedCanvasSizes[panelIndex].height/2
+    };
+  }
+  return startingPos;
 }
 
 function getRandomInt(min, max) {

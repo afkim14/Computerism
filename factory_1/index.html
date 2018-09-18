@@ -5,8 +5,6 @@
     <head>
       <style>
         #canvas {
-          width: 300px;
-          height: 300px;
           position:absolute;
           left:0; right:0;
           top:0; bottom:0;
@@ -20,21 +18,21 @@
 
     <script>var socket = io.connect('http://127.0.0.1:8080');</script>
     <script>
+        var constrainedCanvasWidth = window.innerWidth-10;
+        var constrainedCanvasHeight = window.innerHeight-10;
+        var canvasData = {
+          width: constrainedCanvasWidth,
+          height: constrainedCanvasHeight
+        };
+        socket.emit('canvasInfo', canvasData);
+    </script>
+    <script>
         var shapes = [];
         var factories = [];
         var canvas;
         var initiated = false;
-        var constrainedCanvasWidth = 300;
-        var constrainedCanvasHeight = 300;
 
-        socket.on('canvasInfo', function(data) {
-          constrainedCanvasWidth = data.width;
-          constrainedCanvasHeight = data.height;
-          var elem = document.getElementById("canvas");
-          elem.style.width = constrainedCanvasWidth.toString()+"px";
-          elem.style.height = constrainedCanvasHeight.toString()+"px";
-          canvas = createCanvas(constrainedCanvasWidth, constrainedCanvasHeight);
-          canvas.parent('canvas');
+        socket.on('initiate', function() {
           initiated = true;
         });
         socket.on('createCircle', function(data) {
@@ -92,7 +90,7 @@
               var arr = [Math.abs(diff[0]), Math.abs(diff[1])];
               var max = Math.max(arr[0], arr[1]);
               var normalized = [diff[0] / max, diff[1] / max];
-              var mov_factor = 0.85;
+              var mov_factor = 1.2;
               this.x += normalized[0] * mov_factor;
               this.y += normalized[1] * mov_factor;
             }
@@ -124,6 +122,7 @@
         function setup() {
           canvas = createCanvas(constrainedCanvasWidth, constrainedCanvasHeight);
         	canvas.parent('canvas');
+          setupCanvas();
         }
 
         function draw() {
@@ -147,6 +146,12 @@
           for (var i=0; i < factories.length; i++) {
             factories[i].show();
           }
+        }
+
+        function setupCanvas() {
+          var elem = document.getElementById("canvas");
+          elem.style.width = constrainedCanvasWidth.toString()+"px";
+          elem.style.height = constrainedCanvasHeight.toString()+"px";
         }
 
         function createCircle(data) {

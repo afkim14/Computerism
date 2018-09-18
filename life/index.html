@@ -5,8 +5,6 @@
     <head>
       <style>
         #canvas {
-          width: 300px;
-          height: 300px;
           position:absolute;
           left:0; right:0;
           top:0; bottom:0;
@@ -20,12 +18,10 @@
 
     <script>var socket = io.connect('http://127.0.0.1:8080');</script>
     <script>
-        var curr_color = {
-          r: 255,
-          g: 255,
-          b: 255
-        };
+        var initiated = false;
+        var curr_color = {r: 33, g: 33, b: 33};
         socket.on('update', function(data) {
+            initiated = true;
             curr_color = { r : data.color[0],
                            g : data.color[1],
                            b : data.color[2]};
@@ -33,16 +29,25 @@
         });
 
         var canvas;
-        var constrainedCanvasWidth = 300;
-        var constrainedCanvasHeight = 300;
+        var constrainedCanvasWidth = window.innerWidth-10;
+        var constrainedCanvasHeight = window.innerHeight-10;
         function setup() {
-        	updateCanvas(curr_color);
-        }
-
-        function updateCanvas(color) {
           canvas = createCanvas(constrainedCanvasWidth, constrainedCanvasHeight);
         	canvas.parent('canvas');
-        	background(color.r, color.g, color.b);
+          var elem = document.getElementById("canvas");
+          elem.style.width = width.toString()+"px";
+          elem.style.height = height.toString()+"px";
+        }
+
+        function draw() {
+          background(curr_color.r, curr_color.g, curr_color.b);
+          if (!initiated) {
+            push();
+            fill(255,255,255);
+            textAlign(CENTER);
+            text("Waiting for other panels to connect ...", constrainedCanvasWidth/2, constrainedCanvasHeight/2);
+            pop();
+          }
         }
     </script>
 </html>

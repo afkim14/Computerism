@@ -15,15 +15,15 @@
 </body>
 <script>var socket = io.connect('http://localhost:8080');</script>
 <script>
+        var constrainedCanvasWidth = window.innerWidth-10;
+        var constrainedCanvasHeight = window.innerHeight-10;
         socket.on('update', function(data) {
-            UpdateCanvas(data.width, data.height, data.bgColor);
-            UpdateLetter(data.letter, data.width/2, data.height/2);
+            UpdateCanvas(constrainedCanvasWidth, constrainedCanvasHeight, data.bgColor);
+            UpdateLetter(data.letter, constrainedCanvasWidth/2, constrainedCanvasHeight/2);
         });
 
         var canvas;
         function setup() {
-          var constrainedCanvasWidth = 0;
-          var constrainedCanvasHeight = 0;
           canvas = createCanvas(constrainedCanvasWidth, constrainedCanvasHeight);
         	canvas.parent('canvas');
           background(255);
@@ -51,7 +51,6 @@
         }
 
         function RequestNextLetter() {
-          console.log("ya");
           socket.emit('letterDone');
         }
 

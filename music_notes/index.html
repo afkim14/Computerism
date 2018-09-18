@@ -23,25 +23,23 @@
         socket.on('update', function(data) {
             var curr_color = { r : data.r, g : data.g, b : data.b };
             var curr_note = data.note;
-            updateCanvas(data.width, data.height, curr_color);
+            updateCanvas(curr_color);
             playSound(curr_note);
         });
 
         var canvas;
-        var constrainedCanvasWidth = 0;
-        var constrainedCanvasHeight = 0;
+        var constrainedCanvasWidth = window.innerWidth-10;
+        var constrainedCanvasHeight = window.innerHeight-10;
         function setup() {
           canvas = createCanvas(constrainedCanvasWidth, constrainedCanvasHeight);
-        	canvas.parent('canvas');
+          canvas.parent('canvas');
+          var elem = document.getElementById("canvas");
+          elem.style.width = constrainedCanvasWidth.toString()+"px";
+          elem.style.height = constrainedCanvasHeight.toString()+"px";
           background(255);
         }
 
-        function updateCanvas(width, height, curr_color) {
-          var elem = document.getElementById("canvas");
-          elem.style.width = width.toString()+"px";
-          elem.style.height = height.toString()+"px";
-          canvas = createCanvas(width, height);
-          canvas.parent('canvas');
+        function updateCanvas(curr_color) {
           background(curr_color.r, curr_color.g, curr_color.b);
         }
 

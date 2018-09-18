@@ -3,8 +3,6 @@
     <head>
       <style>
         #canvas {
-          width: 300px;
-          height: 300px;
           position:absolute;
           left:0; right:0;
           top:0; bottom:0;
@@ -20,20 +18,20 @@
 
     <script>var socket = io.connect('http://127.0.0.1:8080');</script>
     <script>
+        var constrainedCanvasWidth = window.innerWidth-10;
+        var constrainedCanvasHeight = window.innerHeight-10;
+        var canvasData = {
+          width: constrainedCanvasWidth,
+          height: constrainedCanvasHeight
+        };
+        socket.emit('canvasInfo', canvasData);
+    </script>
+    <script>
         var objs = [];
         var canvas;
         var initiated = false;
-        var constrainedCanvasWidth = 300;
-        var constrainedCanvasHeight = 300;
 
-        socket.on('canvasInfo', function(data) {
-          constrainedCanvasWidth = data.width;
-          constrainedCanvasHeight = data.height;
-          var elem = document.getElementById("canvas");
-          elem.style.width = constrainedCanvasWidth.toString()+"px";
-          elem.style.height = constrainedCanvasHeight.toString()+"px";
-          canvas = createCanvas(constrainedCanvasWidth, constrainedCanvasHeight);
-          canvas.parent('canvas');
+        socket.on('initiate', function() {
           initiated = true;
         });
         socket.on('createCircle', function(data) {
@@ -85,7 +83,9 @@
         function setup() {
           canvas = createCanvas(constrainedCanvasWidth, constrainedCanvasHeight);
         	canvas.parent('canvas');
-
+          var elem = document.getElementById("canvas");
+          elem.style.width = constrainedCanvasWidth.toString()+"px";
+          elem.style.height = constrainedCanvasHeight.toString()+"px";
         }
 
         function draw() {

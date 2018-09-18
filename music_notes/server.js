@@ -2,8 +2,6 @@ var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var constrainedCanvasWidth = 300;
-var constrainedCanvasHeight = 300;
 var currScaleIndex = -1;
 var currKeyIndex = -1;
 var notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -43,8 +41,6 @@ io.on('connection', function(socket) {
     var nextNote = createRandomNote();
 
     var data = {
-      width: constrainedCanvasWidth,
-      height: constrainedCanvasHeight,
       r : nextColor.r,
       g : nextColor.g,
       b : nextColor.b,
@@ -62,8 +58,6 @@ function sendNotes() {
     var nextColor = createRandomColor();
     var nextNote = createRandomNote();
     var data = {
-      width: constrainedCanvasWidth,
-      height: constrainedCanvasHeight,
       r : nextColor.r,
       g : nextColor.g,
       b : nextColor.b,
