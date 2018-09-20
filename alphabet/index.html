@@ -15,8 +15,8 @@
 </body>
 <script>var socket = io.connect('http://localhost:8080');</script>
 <script>
-        var constrainedCanvasWidth = window.innerWidth-10;
-        var constrainedCanvasHeight = window.innerHeight-10;
+        var constrainedCanvasWidth = window.outerWidth;
+        var constrainedCanvasHeight = window.outerHeight;
         socket.on('update', function(data) {
             UpdateCanvas(constrainedCanvasWidth, constrainedCanvasHeight, data.bgColor);
             UpdateLetter(data.letter, constrainedCanvasWidth/2, constrainedCanvasHeight/2);

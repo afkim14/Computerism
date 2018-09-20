@@ -26,8 +26,8 @@
             updateCanvas(curr_color);
         });
         var canvas;
-        var constrainedCanvasWidth = window.innerWidth-10;
-        var constrainedCanvasHeight = window.innerHeight-10;
+        var constrainedCanvasWidth = window.outerWidth;
+        var constrainedCanvasHeight = window.outerHeight;
         function setup() {
         	updateCanvas(curr_color);
         }

@@ -15,8 +15,8 @@
 </body>
 <script>var socket = io.connect('http://127.0.0.1:8080');</script>
 <script>
-        var constrainedCanvasWidth = window.innerWidth-10;
-        var constrainedCanvasHeight = window.innerHeight-10;
+        var constrainedCanvasWidth = window.outerWidth;
+        var constrainedCanvasHeight = window.outerHeight;
         var canvasData = {
           width: constrainedCanvasWidth,
           height: constrainedCanvasHeight
