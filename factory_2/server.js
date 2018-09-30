@@ -13,6 +13,7 @@ var circleColor;
 var artworkSent = false;
 var NUM_PANELS = 3;
 var panel_ids = [];
+var mid_panel_tick = true;
 
 app.use(express.static(__dirname + '/node_modules'));
 app.get('/', function(req, res,next) {
@@ -34,14 +35,25 @@ io.on('connection', function(socket) {
 
     socket.on('circle_edge', function(data) {
       if (socket.id == panel_ids[0]) {
-        squareSize = [getSmallestRadius(), getSmallestRadius()];
-        var squareColor = circleColor;
-        var startingPos = getFactoryPosition(1);
-        var destination = getDestination(1, 1);
-        SendSquare(1, 0, squareSize, squareColor, startingPos, destination);
+        if (data.circleId == 0) {
+          SendCircle(1, 0, radius, circleColor, getStartingPos(1, 0), getDestination(1, 0));
+        } else if (data.circleId == 1) {
+          circleColor = getRandomColor();
+          SendCircle(0, 0, radius, circleColor, getFactoryPosition(0), getDestination(0, 0));
+        }
       } else if (socket.id == panel_ids[1]) {
-        var squareColor = circleColor;
-        SendSquare(2, 0, squareSize, squareColor, getStartingPos(2, 2), getDestination(2, 2));
+        if (data.circleId == 0) {
+          SendCircle(2, 0, radius, circleColor, getStartingPos(2, 0), getDestination(2, 1));
+        } else if (data.circleId == 1) {
+          SendSquare(0, 1, [radius, radius], circleColor, getStartingPos(0, 1), getDestination(0,3));
+        }
+      } else if (socket.id == panel_ids[2]) {
+        if (data.circleId == 0) {
+          circleColor = getRandomColor();
+          SendSquare(2, 1, [radius, radius], circleColor, getFactoryPosition(2), getDestination(2,2));
+        } else if (data.circleId == 1) {
+          SendSquare(1, 1, [radius, radius], circleColor, getStartingPos(1, 1), getDestination(1,2));
+        }
       }
     });
 });
@@ -51,13 +63,8 @@ function InitiateArtwork() {
   radius = getSmallestRadius();
   circleColor = getRandomColor();
   SendInitiate();
-  SendCircle(0, 0, radius, circleColor, getStartingPos(0, 0), getDestination(0, 0));
+  SendCircle(0, 0, radius, circleColor, getFactoryPosition(0), getDestination(0, 0));
   artworkSent = true;
-  setInterval(nextCircle, 2000);
-}
-
-function nextCircle() {
-  SendCircle(0, 0, radius, circleColor, getStartingPos(0, 0), getDestination(0, 0));
 }
 
 function SendInitiate() {
@@ -86,7 +93,7 @@ function CreateAndSendFactories() {
     factoryColors.push(getRandomColor());
   }
   SendFactory(0, getFactoryPosition(0), factorySize, factoryColors);
-  SendFactory(1, getFactoryPosition(1), factorySize, factoryColors);
+  SendFactory(2, getFactoryPosition(2), factorySize, factoryColors);
 }
 
 function SendFactory(panelIndex, pos, size, colors) {
@@ -135,12 +142,12 @@ function getFactoryPosition(panelIndex) {
   var pos;
   if (panelIndex == 0) {
     pos = {
-      x: constrainedCanvasSizes[panelIndex].width/2,
+      x: constrainedCanvasSizes[panelIndex].width/2 - factorySize[0]/1.5,
       y: constrainedCanvasSizes[panelIndex].height/2
     }
-  } else if (panelIndex == 1) {
+  } else if (panelIndex == 2) {
     pos = {
-      x: constrainedCanvasSizes[panelIndex].width/2 - factorySize[0]/2,
+      x: constrainedCanvasSizes[panelIndex].width/2 + factorySize[0]/1.5,
       y: constrainedCanvasSizes[panelIndex].height/2
     }
   }
@@ -152,23 +159,22 @@ function getDestination(panelIndex, option) {
   var padding = 10;
   if (option == 0) {
     destination = {
-      destinations: [
-                      [0+radius, constrainedCanvasSizes[panelIndex].height/2],
-                      [constrainedCanvasSizes[panelIndex].width/2, constrainedCanvasSizes[panelIndex].height/2]
-                    ],
+      destinations: [[constrainedCanvasSizes[panelIndex].width + radius, constrainedCanvasSizes[panelIndex].height/2]],
       tolerance: 1.0
     };
   } else if (option == 1) {
     destination = {
-      destinations: [[constrainedCanvasSizes[panelIndex].width + squareSize[0], constrainedCanvasSizes[panelIndex].height/2]],
+      destinations: [[constrainedCanvasSizes[panelIndex].width/2 + factorySize[0]/1.5, constrainedCanvasSizes[panelIndex].height/2]],
       tolerance: 1.0
     };
   } else if (option == 2) {
     destination = {
-      destinations: [
-        [constrainedCanvasSizes[panelIndex].width/2, constrainedCanvasSizes[panelIndex].height/2],
-        [constrainedCanvasSizes[panelIndex].width/2, constrainedCanvasSizes[panelIndex].height + radius]
-      ],
+      destinations: [[0 - radius, constrainedCanvasSizes[panelIndex].height/2]],
+      tolerance: 1.0
+    };
+  } else if (option == 3) {
+    destination = {
+      destinations: [[constrainedCanvasSizes[panelIndex].width/2 - factorySize[0]/1.5, constrainedCanvasSizes[panelIndex].height/2]],
       tolerance: 1.0
     };
   }
@@ -179,17 +185,12 @@ function getStartingPos(panelIndex, option) {
   var startingPos;
   if (option == 0) {
     startingPos = {
-      x: 0+radius,
-      y: 0-radius
+      x: 0-radius,
+      y: constrainedCanvasSizes[panelIndex].height/2
     };
   } else if (option == 1) {
     startingPos = {
       x: constrainedCanvasSizes[panelIndex].width+radius,
-      y: constrainedCanvasSizes[panelIndex].height/2
-    };
-  } else if (option == 2) {
-    startingPos = {
-      x: 0-radius,
       y: constrainedCanvasSizes[panelIndex].height/2
     };
   }
