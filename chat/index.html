@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="http://localhost:8080/socket.io/socket.io.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.16/p5.js"></script>
+<style>
+        #canvas {
+          position:absolute;
+          left:0; right:0;
+          top:0; bottom:0;
+          margin:auto;
+        }
+      </style>
+</head><body>
+<div id="canvas"></div>
+</body>
+<script>var socket = io.connect('http://localhost:8080');</script>
+<script>
+        var constrainedCanvasWidth = window.outerWidth;
+        var constrainedCanvasHeight = window.outerHeight;
+        var canvasData = {
+          width: constrainedCanvasWidth,
+          height: constrainedCanvasHeight
+        };
+        socket.emit('canvasInfo', canvasData);
+    </script>
+<script>
+        var canvas;
+        var initiated = false;
+        var curr_line = "";
+        var person;
+
+        socket.on('initiate', function() {
+          initiated = true;
+        });
+        socket.on('update', function(data) {
+            UpdateLetter(data.letter);
+        });
+        socket.on('createCircle', function(data) {
+            createCircle(data);
+        });
+
+        function Shape(type, x, y, radius, color) {
+          this.type = type;
+          this.x = x;
+          this.y = y;
+          this.radius = radius;
+          this.color = color;
+          this.show = function() {
+            push();
+            noStroke();
+            fill(color.r, color.g, color.b);
+            if (this.type == "CIRCLE") {
+              ellipse(this.x, this.y, this.radius, this.radius);
+            } else if (this.type == "SQUARE") {
+              rectMode(CENTER);
+              rect(this.x, this.y, this.radius, this.radius);
+            }
+            pop();
+          }
+        }
+
+        function setup() {
+          canvas = createCanvas(constrainedCanvasWidth, constrainedCanvasHeight);
+        	canvas.parent('canvas');
+          setupCanvas();
+        }
+
+        function draw() {
+          background(33, 33, 33);
+          if (!initiated) {
+            push();
+            fill(255,255,255);
+            textAlign(CENTER);
+            text("Waiting for other panels to connect ...", constrainedCanvasWidth/2, constrainedCanvasHeight/2);
+            pop();
+          }
+
+          push();
+          noStroke();
+          fill(255);
+          textSize(25);
+          textAlign(CENTER);
+          text(curr_line, constrainedCanvasWidth/2, (constrainedCanvasHeight/2)+25);
+          pop();
+
+          if (person != null) {
+            person.show();
+          }
+        }
+
+        function UpdateLetter(letter) {
+          curr_line = letter;
+          setTimeout(RequestNextLetter, getRandomInt(1000, 3000));
+        }
+
+        function RequestNextLetter() {
+          socket.emit('letterDone');
+        }
+
+        function setupCanvas() {
+          var elem = document.getElementById("canvas");
+          elem.style.width = constrainedCanvasWidth.toString()+"px";
+          elem.style.height = constrainedCanvasHeight.toString()+"px";
+        }
+
+        function getRandomInt(min, max) {
+          return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function createCircle(data) {
+          person = new Shape("CIRCLE", data.startingPos.x, data.startingPos.y, data.radius, data.color);
+        }
+    </script>
+</html>

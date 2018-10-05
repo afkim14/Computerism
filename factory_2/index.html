@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><script src="http://localhost:8080/socket.io/socket.io.js"></script>
+<head><script src="http://192.168.1.4:8080/socket.io/socket.io.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.16/p5.js"></script>
 <style>
         #canvas {
@@ -13,7 +13,7 @@
 </head><body>
 <div id="canvas"></div>
 </body>
-<script>var socket = io.connect('http://localhost:8080');</script>
+<script>var socket = io.connect('http://192.168.1.4:8080');</script>
 <script>
         var constrainedCanvasWidth = window.outerWidth;
         var constrainedCanvasHeight = window.outerHeight;
@@ -87,7 +87,7 @@
               var arr = [Math.abs(diff[0]), Math.abs(diff[1])];
               var max = Math.max(arr[0], arr[1]);
               var normalized = [diff[0] / max, diff[1] / max];
-              var mov_factor = 1.2;
+              var mov_factor = 2.0;
               this.x += normalized[0] * mov_factor;
               this.y += normalized[1] * mov_factor;
             }

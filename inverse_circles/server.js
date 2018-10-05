@@ -7,7 +7,7 @@ var constrainedCanvasSizes = [];
 var color;
 var radius;
 var artworkSent = false;
-var NUM_PANELS = 3;
+var NUM_PANELS = 2;
 var panel_ids = [];
 
 app.use(express.static(__dirname + '/node_modules'));
@@ -24,24 +24,24 @@ io.on('connection', function(socket) {
       }
 
       if (panel_ids.length >= NUM_PANELS && !artworkSent) {
-        setTimeout(InitiateArtwork, 1000);
+        setTimeout(InitiateArtwork, 500);
       }
     });
 
     socket.on('circle_edge', function(data) {
-      currPanel = (currPanel + 1) % NUM_PANELS;
-      SendArtwork(currPanel, 0, radius, color, getStartingPos(currPanel), getDestination(currPanel));
+       if (socket.id == panel_ids[0]) {
+        SendArtwork(1, 1, radius, color, {x: constrainedCanvasSizes[1].width/2, y: constrainedCanvasSizes[1].height/2});
+       } else if (socket.id == panel_ids[1]) {
+        SendArtwork(0, 0, radius, color, {x: constrainedCanvasSizes[0].width/2, y: constrainedCanvasSizes[0].height/2});
+       }
     });
 });
 
 function InitiateArtwork() {
-  radius = getSmallestRadius();
+  radius = 0;
   color = getRandomColor();
-  currPanel = 0;
-  destination = getDestination(currPanel);
-  startingPos = getStartingPos(currPanel);
   SendInitiate();
-  SendArtwork(currPanel, 0, radius, color, startingPos, destination);
+  SendArtwork(0, 0, radius, color, {x: constrainedCanvasSizes[0].width/2, y: constrainedCanvasSizes[0].height/2});
   artworkSent = true;
 }
 
@@ -52,33 +52,15 @@ function SendInitiate() {
   }
 }
 
-function SendArtwork(panelIndex, circleId, radius, color, startingPos, destination) {
+function SendArtwork(panelIndex, circleId, radius, color, startingPos) {
   var sockets = io.sockets.sockets;
   var data = {
     circleId: circleId,
     radius: radius,
     color: color,
     startingPos: startingPos,
-    destination: destination
   };
   sockets[panel_ids[panelIndex]].emit('createCircle', data);
-}
-
-function getDestination(panelIndex) {
-  var destination = {
-    emit_destination: [constrainedCanvasSizes[panelIndex].width - radius, constrainedCanvasSizes[panelIndex].height/2],
-    dead_destination: [constrainedCanvasSizes[panelIndex].width + radius, constrainedCanvasSizes[panelIndex].height/2],
-    tolerance: 0.5
-  };
-  return destination;
-}
-
-function getStartingPos(panelIndex) {
-  var startingPos = {
-    x: 0-radius,
-    y: constrainedCanvasSizes[panelIndex].height/2
-  };
-  return startingPos;
 }
 
 function getRandomColor() {

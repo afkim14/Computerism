@@ -53,7 +53,7 @@ function InitiateArtwork() {
   SendInitiate();
   SendCircle(0, 0, radius, circleColor, getStartingPos(0, 0), getDestination(0, 0));
   artworkSent = true;
-  setInterval(nextCircle, 2000);
+  setInterval(nextCircle, 4000);
 }
 
 function nextCircle() {
@@ -80,7 +80,7 @@ function SendCircle(panelIndex, circleId, radius, color, startingPos, destinatio
 }
 
 function CreateAndSendFactories() {
-  factorySize = [100, 100];
+  factorySize = [getSmallestRadius()*2, getSmallestRadius()*2];
   var factoryColors = [];
   for (var i = 0; i < 2; i ++) {
     factoryColors.push(getRandomColor());

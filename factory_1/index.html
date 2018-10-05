@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><script src="http://localhost:8080/socket.io/socket.io.js"></script>
+<head><script src="http://192.168.1.4:8080/socket.io/socket.io.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.16/p5.js"></script>
 <style>
         #canvas {
@@ -13,7 +13,7 @@
 </head><body>
 <div id="canvas"></div>
 </body>
-<script>var socket = io.connect('http://localhost:8080');</script>
+<script>var socket = io.connect('http://192.168.1.4:8080');</script>
 <script>
         var constrainedCanvasWidth = window.outerWidth;
         var constrainedCanvasHeight = window.outerHeight;

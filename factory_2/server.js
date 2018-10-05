@@ -87,7 +87,7 @@ function SendCircle(panelIndex, circleId, radius, color, startingPos, destinatio
 }
 
 function CreateAndSendFactories() {
-  factorySize = [100, 100];
+  factorySize = [getSmallestRadius()*2, getSmallestRadius()*2];
   var factoryColors = [];
   for (var i = 0; i < 2; i ++) {
     factoryColors.push(getRandomColor());

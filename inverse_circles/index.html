@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><script src="http://localhost:8080/socket.io/socket.io.js"></script>
+<head><script src="http://192.168.1.4:8080/socket.io/socket.io.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.16/p5.js"></script>
 <style>
         #canvas {
@@ -13,7 +13,7 @@
 </head><body>
 <div id="canvas"></div>
 </body>
-<script>var socket = io.connect('http://localhost:8080');</script>
+<script>var socket = io.connect('http://192.168.1.4:8080');</script>
 <script>
         var constrainedCanvasWidth = window.outerWidth;
         var constrainedCanvasHeight = window.outerHeight;
@@ -35,16 +35,15 @@
             createCircle(data);
         });
 
-        function Circle(id, x, y, radius, color, destinations) {
+        function Circle(id, x, y, radius, color) {
           this.id = id;
           this.x = x;
           this.y = y;
           this.radius = radius;
           this.color = color;
-          this.curr_destination = destinations.emit_destination;
-          this.destinations = destinations;
-          this.emitted = false;
           this.dead = false;
+          this.inc_toggle = true;
+          this.rate = 5;
           this.show = function() {
             push();
             noStroke();
@@ -52,27 +51,20 @@
             ellipse(this.x, this.y, this.radius, this.radius);
             pop();
 
-            var tolerance = this.destinations.tolerance;
-            if ((this.x >= this.curr_destination[0] - tolerance && this.x <= this.curr_destination[0] + tolerance) &&
-                (this.y >= this.curr_destination[1] - tolerance && this.y <= this.curr_destination[1] + tolerance)) {
-                  if (!this.emitted) {
-                    var data = {
-                      circleId: this.id
-                    };
-                    socket.emit('circle_edge', data);
-                    this.emitted = true;
-                    this.curr_destination = this.destinations.dead_destination;
-                  } else {
-                    this.dead = true;
-                  }
+            if (this.inc_toggle) {
+              this.radius += this.rate;
+              if (this.radius >= constrainedCanvasHeight/2) {
+                this.inc_toggle = false;
+              }
             } else {
-              var diff = [this.curr_destination[0] - this.x, this.curr_destination[1] - this.y];
-              var arr = [Math.abs(diff[0]), Math.abs(diff[1])];
-              var max = Math.max(arr[0], arr[1]);
-              var normalized = [diff[0] / max, diff[1] / max];
-              var mov_factor = 1.2;
-              this.x += normalized[0] * mov_factor;
-              this.y += normalized[1] * mov_factor;
+              this.radius -= this.rate;
+              if (this.radius <= 0) {
+                var data = {
+                  circleId: this.id
+                };
+                socket.emit('circle_edge', data);
+                this.dead = true;
+              }
             }
           }
         }
@@ -105,7 +97,7 @@
         }
 
         function createCircle(data) {
-          var circle = new Circle(data.circleId, data.startingPos.x, data.startingPos.y, data.radius, data.color, data.destination);
+          var circle = new Circle(data.circleId, data.startingPos.x, data.startingPos.y, data.radius, data.color);
           objs.push(circle);
         }
     </script>
