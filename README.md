@@ -1,1 +1,7 @@
-# art
+# Computerism
+
+### Abstract
+
+With the emergence and dominance of technology in today’s era, it is almost ignorant to overlook its implications and possibilities in the arts. Although the combination of hardware and software has been commonly used to automate daily mundane tasks, the purpose and usage of technology has become more than for mere convenience. Current hardware and software provide services that do not only facilitate human’s everyday tasks, but also enhance what we are capable of doing in unprecedented ways. With the emergence of big data accumulation, advancements in research of artificial intelligence, and the public’s growing acceptance of the power of computers, the world is experiencing a drastic evolution from disparate societies to a truly connected and powerful world, limited only by imagination. The beauty of computation, in every sense of the word, is often undervalued or unnoticed. We have to acknowledge that software and computation allow us to achieve results in multiple fields that we humans, alone, would never be able to do. This holds true especially in the arts. I propose that a new generation of thought and art has arrived, and it is our duty as artists to use these new tools and opportunities to create art that is truly otherworldly, meaningful, and beautiful.
+
+For the rest of the manifesto, please go [here](http://afkim14.github.io/andresfernandokim/about/manifesto.html)
